@@ -3,7 +3,7 @@ import { parseUnits } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 
 function ntos(num: BigNumberish): string {
-    return typeof(num) === "string" ? num : num.toString();
+    return typeof num === "string" ? num : num.toString();
 }
 
 /*
@@ -17,16 +17,16 @@ function ntos(num: BigNumberish): string {
  *     decimalsOrUnitName Number of decimals (e.g., 18, 9) or name of an ethereum unit (e.g., "ether", "gwei").
  */
 const units = {
-        wei:    (val: BigNumberish): BigNumber => parseUnits(ntos(val), "wei"),
-        kwei:   (val: BigNumberish): BigNumber => parseUnits(ntos(val), "kwei"),
-        mwei:   (val: BigNumberish): BigNumber => parseUnits(ntos(val), "mwei"),
-        gwei:   (val: BigNumberish): BigNumber => parseUnits(ntos(val), "gwei"),
-        szabo:  (val: BigNumberish): BigNumber => parseUnits(ntos(val), "szabo"),
-        finney: (val: BigNumberish): BigNumber => parseUnits(ntos(val), "finney"),
-        ether:  (val: BigNumberish): BigNumber => parseUnits(ntos(val), "ether"),
-        decimals: (val: BigNumberish, decimalsOrUnitName?: BigNumberish): BigNumber =>
-            parseUnits(ntos(val), decimalsOrUnitName)
-    };
+    wei: (val: BigNumberish): BigNumber => parseUnits(ntos(val), "wei"),
+    kwei: (val: BigNumberish): BigNumber => parseUnits(ntos(val), "kwei"),
+    mwei: (val: BigNumberish): BigNumber => parseUnits(ntos(val), "mwei"),
+    gwei: (val: BigNumberish): BigNumber => parseUnits(ntos(val), "gwei"),
+    szabo: (val: BigNumberish): BigNumber => parseUnits(ntos(val), "szabo"),
+    finney: (val: BigNumberish): BigNumber => parseUnits(ntos(val), "finney"),
+    ether: (val: BigNumberish): BigNumber => parseUnits(ntos(val), "ether"),
+    decimals: (val: BigNumberish, decimalsOrUnitName?: BigNumberish): BigNumber =>
+        parseUnits(ntos(val), decimalsOrUnitName)
+};
 
 // Aliases.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

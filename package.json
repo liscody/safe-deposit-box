@@ -75,11 +75,13 @@
         "ndeploy:all": "ENABLED_OPTIMIZER=true npm run compile-all && node scripts/deployment/deploy.js",
         "dev:flatten": "npm run compile-all && npx hardhat flatten",
         "postinstall": "npm run compile-all && npm run dev:abi && npm run dev:docs",
-        "prepare": "npx husky install"
+        "prepare": "npx husky install",
+        "prettier:solidity": "./node_modules/.bin/prettier --write contracts/*.sol --write contracts/**/*.sol"
     },
     "dependencies": {
         "@openzeppelin/contracts": "4.7.3",
-        "@openzeppelin/contracts-upgradeable": "4.7.3"
+        "@openzeppelin/contracts-upgradeable": "4.7.3",
+        "web3": "^1.8.1"
     },
     "devDependencies": {
         "@commitlint/cli": "^17.1.2",

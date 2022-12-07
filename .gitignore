@@ -43,3 +43,5 @@ gas-report.txt
 
 # Output of `solc`.
 bin
+.a-dev
+

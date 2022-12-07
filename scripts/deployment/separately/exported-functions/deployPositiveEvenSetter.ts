@@ -3,7 +3,7 @@
 import hre from "hardhat";
 const ethers = hre.ethers;
 
-import type { PositiveEvenSetter } from "../../../../typechain-types";
+import type { PositiveEvenSetter } from "../../../../.a-dev/typechain-types";
 
 async function deployPositiveEvenSetter(): Promise<PositiveEvenSetter> {
     /*
