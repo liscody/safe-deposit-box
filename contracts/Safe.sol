@@ -56,7 +56,7 @@ contract Safe is Ownable {
     }
 
     /**
-     * @dev Add token amount to balance of the contract
+     * @dev Withdraw amount by authorized user 
      */
     function withdrawAssets(
         address boxOwner,
@@ -84,13 +84,5 @@ contract Safe is Ownable {
         } else {
             IERC20(asset).safeTransfer(msg.sender, amount);
         }
-
-        // if (asset == address(0)) {
-        //     console.log(amount, "from contract");
-        //     (bool os, ) = msg.sender.call{value: amount}("");
-        //     require(os);
-        // } else {
-        //     IERC20(asset).safeTransfer(msg.sender, amount);
-        // }
     }
 }

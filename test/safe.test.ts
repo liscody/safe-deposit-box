@@ -20,7 +20,7 @@ describe("SAFE", function () {
     // Signers.
     let deployer: SignerWithAddress, owner: SignerWithAddress, user: SignerWithAddress;
     let bob: SignerWithAddress, alice: SignerWithAddress, eve: SignerWithAddress;
-    /// hardhat private key
+    // hardhat private key
     const BOB_PK = "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a";
 
     let safe: Safe;
