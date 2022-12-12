@@ -4,35 +4,66 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Safe {
     using ECDSA for bytes32;
-    using Counters for Counters.Counter;
     using SafeERC20 for IERC20;
 
-    Counters.Counter private depositIds;
+    struct DepositInfo {
+        uint256 amount;
+        uint64 startClaimPeriod;
+        address asset;
+        bool claimed;
+    }
 
-    /// @dev address of owner => boxId => amount
-    mapping(address => mapping(uint256 => uint256)) public deposited;
-    mapping(uint256 => bool) public nonces;
+    struct NftDepositInfo {
+        uint256 nftId;
+        uint64 startClaimPeriod;
+        address asset;
+        bool claimed;
+    }
+
+    mapping(address => uint256) public userDepositIds;
+    mapping(address => mapping(uint256 => DepositInfo)) public deposited;
+    mapping(address => mapping(uint256 => NftDepositInfo)) public nftDeposited;
 
     error AlreadyWithdrawn();
     error WrongSignature();
     error WrongAmount();
     error OutOfWithdrawalPeriod();
+    error EarlyWithdrawCall();
     error OnlyERC20();
     error WrongNftId();
+
+    event DepositAssets(address indexed depositOwner, uint256 amount);
+    event DepositNFTAssets(address indexed depositOwner, uint256 id);
+    event WithdrawAssets(
+        address indexed sender,
+        address indexed owner,
+        uint256 depositId,
+        address asset,
+        uint256 amount
+    );
+    event WithdrawNftAssets(
+        address indexed sender,
+        address indexed owner,
+        uint256 depositId,
+        address asset,
+        uint256 nftId
+    );
 
     /**
      * @dev Add token amount to balance of the contract
      */
-    function depositAssets(address asset, uint256 amount) external payable {
-        depositIds.increment();
-        uint256 newBoxId = depositIds.current();
+    function depositAssets(
+        address asset,
+        uint256 amount,
+        uint64 _startClaimPeriod
+    ) external payable {
+        userDepositIds[msg.sender] += 1;
 
-        deposited[msg.sender][newBoxId] = amount;
+        deposited[msg.sender][userDepositIds[msg.sender]] = DepositInfo(amount, _startClaimPeriod, asset, false);
 
         if (asset == address(0)) {
             if (msg.value != amount) revert WrongAmount();
@@ -40,17 +71,28 @@ contract Safe {
             if (msg.value != 0) revert OnlyERC20();
             IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
         }
+        emit DepositAssets(msg.sender, amount);
     }
 
     /**
      * @dev Add NFT to balance of the contract
      */
-    function depositNftAssets(address assetNft, uint256 nftId) external {
-        depositIds.increment();
-        uint256 newBoxId = depositIds.current();
-        deposited[msg.sender][newBoxId] = nftId;
+    function depositNftAssets(
+        address assetNft,
+        uint256 nftId,
+        uint64 _startClaimPeriod
+    ) external {
+        userDepositIds[msg.sender] += 1;
+
+        nftDeposited[msg.sender][userDepositIds[msg.sender]] = NftDepositInfo(
+            nftId,
+            _startClaimPeriod,
+            assetNft,
+            false
+        );
 
         IERC721(assetNft).transferFrom(msg.sender, address(this), nftId);
+        emit DepositNFTAssets(msg.sender, nftId);
     }
 
     ///@dev validate signature
@@ -67,55 +109,76 @@ contract Safe {
      * @dev Withdraw amount by authorized user
      */
     function withdrawAssets(
-        address boxOwner,
-        uint256 boxId,
-        uint64 deadline,
-        address asset,
+        address depositOwner,
+        uint256 depositId,
+        uint64 withdrawDeadline,
         bytes memory signature
     ) external payable {
-        if (nonces[boxId]) revert AlreadyWithdrawn();
-        uint256 amount = deposited[boxOwner][boxId];
-        if (deadline < block.timestamp) revert OutOfWithdrawalPeriod();
+        DepositInfo storage deposit = deposited[depositOwner][depositId];
+
+        if (deposit.claimed) revert AlreadyWithdrawn();
+        if (deposit.startClaimPeriod >= block.timestamp) revert EarlyWithdrawCall();
+        if (withdrawDeadline <= block.timestamp) revert OutOfWithdrawalPeriod();
 
         checkSignature(
-            abi.encodePacked(boxId, amount, asset, msg.sender, address(this), deadline),
-            boxOwner,
+            abi.encodePacked(
+                depositOwner,
+                depositId,
+                deposit.amount,
+                deposit.asset,
+                msg.sender,
+                address(this),
+                withdrawDeadline
+            ),
+            depositOwner,
             signature
         );
 
-        nonces[boxId] = true;
+        deposit.claimed = true;
 
-        if (asset == address(0)) {
-            (bool os, ) = msg.sender.call{value: amount}("");
+        if (deposit.asset == address(0)) {
+            (bool os, ) = msg.sender.call{value: deposit.amount}("");
             require(os);
         } else {
-            IERC20(asset).safeTransfer(msg.sender, amount);
+            IERC20(deposit.asset).safeTransfer(msg.sender, deposit.amount);
         }
+
+        emit WithdrawAssets(msg.sender, depositOwner, depositId, deposit.asset, deposit.amount);
     }
 
     /**
      * @dev Withdraw NFT by authorized user
      */
     function withdrawNftAssets(
-        address boxOwner,
-        uint256 boxId,
-        uint64 deadline,
-        address assetNft,
+        address depositOwner,
+        uint256 depositId,
+        uint64 withdrawDeadline,
         bytes memory signature
     ) external {
-        if (nonces[boxId]) revert AlreadyWithdrawn();
-        if (deadline < block.timestamp) revert OutOfWithdrawalPeriod();
+        NftDepositInfo storage nftDeposit = nftDeposited[depositOwner][depositId];
 
-        uint256 nftId = deposited[boxOwner][boxId];
+        if (nftDeposit.claimed) revert AlreadyWithdrawn();
+        if (nftDeposit.startClaimPeriod >= block.timestamp) revert EarlyWithdrawCall();
+        if (withdrawDeadline <= block.timestamp) revert OutOfWithdrawalPeriod();
 
         checkSignature(
-            abi.encodePacked(boxId, nftId, assetNft, msg.sender, address(this), deadline),
-            boxOwner,
+            abi.encodePacked(
+                depositOwner,
+                depositId,
+                nftDeposit.nftId,
+                nftDeposit.asset,
+                msg.sender,
+                address(this),
+                withdrawDeadline
+            ),
+            depositOwner,
             signature
         );
 
-        nonces[boxId] = true;
+        nftDeposit.claimed = true;
 
-        IERC721(assetNft).transferFrom(address(this), msg.sender, nftId);
+        IERC721(nftDeposit.asset).transferFrom(address(this), msg.sender, nftDeposit.nftId);
+
+        emit WithdrawAssets(msg.sender, depositOwner, depositId, nftDeposit.asset, nftDeposit.nftId);
     }
 }
