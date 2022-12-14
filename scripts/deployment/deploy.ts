@@ -17,7 +17,7 @@ async function main() {
     const Safe = await hre.ethers.getContractFactory("Safe");
     const safe = await Safe.deploy();
     await safe.deployed();
-    console.log("Vesting deployed on address: ", safe.address);
+    console.log("Safe deployed on address: ", safe.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
