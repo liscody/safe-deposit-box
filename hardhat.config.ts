@@ -33,6 +33,7 @@ import "@openzeppelin/hardhat-upgrades";
 import "hardhat-dependency-compiler"; // See the comment for the field `dependencyCompiler` in `config`.
 import "solidity-docgen"; // The tool by OpenZeppelin to generate documentation for contracts in the Markdown format.
 
+import "./tasks/safe_task_scripts.ts";
 // See `README.md` for details.
 
 /*
@@ -49,8 +50,9 @@ const ETHEREUM_TESTNET_KEYS: string[] = process.env.ETHEREUM_TESTNET_KEYS ?
 // See `config.networks`.
 // const POLYGON_MAINNET_KEYS: string[] = process.env.POLYGON_MAINNET_KEYS ?
 //     process.env.POLYGON_MAINNET_KEYS.split(",") : [];
-// const POLYGON_TESTNET_KEYS: string[] = process.env.POLYGON_TESTNET_KEYS ?
-//     process.env.POLYGON_TESTNET_KEYS.split(",") : [];
+const POLYGON_TESTNET_KEYS: string[] = process.env.POLYGON_TESTNET_KEYS
+    ? process.env.POLYGON_TESTNET_KEYS.split(",")
+    : [];
 
 /*
  * The solc compiler optimizer configuration. (The optimizer is disabled by default).
@@ -120,24 +122,27 @@ const config: HardhatUserConfig = {
             url: process.env.ETHEREUM_URL || "",
             accounts: [...ETHEREUM_MAINNET_KEYS]
         },
-        goerli: {
-            url: process.env.GOERLI_URL || "",
-            accounts: [...ETHEREUM_TESTNET_KEYS]
-        },
-        sepolia: {
-            url: process.env.SEPOLIA_URL || "",
-            accounts: [...ETHEREUM_TESTNET_KEYS]
-        } //,
+        // goerli: {
+        //     url: process.env.GOERLI_URL || "",
+        //     accounts: [...ETHEREUM_TESTNET_KEYS]
+        // },
+        // sepolia: {
+        //     url: process.env.SEPOLIA_URL || "",
+        //     accounts: [...ETHEREUM_TESTNET_KEYS]
+        // } //,
         // // Polygon.
         // // Example of adding of other networks.
         // polygon: {
         //     url: process.env.POLYGON_URL || "",
         //     accounts: [...POLYGON_MAINNET_KEYS]
         // },
-        // mumbai: {
-        //     url:  process.env.MUMBAI_URL || "",
-        //     accounts: [...POLYGON_TESTNET_KEYS]
-        // }
+        mumbai: {
+            url: process.env.MUMBAI_URL || "",
+            accounts: [...POLYGON_TESTNET_KEYS],
+            gas: 21000,
+            gasPrice: 8000000000,
+            blockGasLimit: 100000000429720
+        }
     },
     contractSizer: {
         except: ["mocks/", "from-dependencies/"]
@@ -161,7 +166,7 @@ const config: HardhatUserConfig = {
         outputFile: process.env.GAS_REPORT_TO_FILE ? "gas-report.txt" : undefined
     },
     etherscan: {
-        apiKey: process.env.ETHERSCAN_API_KEY
+        // apiKey: process.env.ETHERSCAN_API_KEY,
         /*
          * If the project targets multiple EVM-compatible networks that have different explorers, then it is necessary
          * to set multiple API keys.
@@ -173,13 +178,13 @@ const config: HardhatUserConfig = {
          * See the link for details:
          * https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan#multiple-api-keys-and-alternative-block-explorers.
          */
-        // apiKey: {
-        //     mainnet: "ETHERSCAN_API_KEY",
-        //     goerli: "ETHERSCAN_API_KEY",
-        //     sepolia: "ETHERSCAN_API_KEY",
-        //     polygon: "POLYGONSCAN_API_KEY",
-        //     polygonMumbai: "POLYGONSCAN_API_KEY"
-        // }
+        apiKey: {
+            mainnet: "ETHERSCAN_API_KEY",
+            goerli: "ETHERSCAN_API_KEY",
+            sepolia: "ETHERSCAN_API_KEY",
+            polygon: "POLYGONSCAN_API_KEY",
+            polygonMumbai: "POLYGONSCAN_API_KEY"
+        }
     },
     abiExporter: {
         pretty: true,
