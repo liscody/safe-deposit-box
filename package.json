@@ -76,7 +76,16 @@
         "dev:flatten": "npm run compile-all && npx hardhat flatten",
         "postinstall": "npm run compile-all && npm run dev:abi && npm run dev:docs",
         "prepare": "npx husky install",
-        "prettier:solidity": "./node_modules/.bin/prettier --write contracts/*.sol --write contracts/**/*.sol"
+        "prettier:solidity": "./node_modules/.bin/prettier --write contracts/*.sol --write contracts/**/*.sol",
+        "mintNFT": "npx hardhat mintNFT --network mumbai",
+        "approveErc20": "npx hardhat approveErc20  --network mumbai",
+        "approveNft": "npx hardhat approveNft  --network mumbai",
+        "depositERC20": "npx hardhat depositERC20 --network mumbai",
+        "depositETH": "npx hardhat depositETH --network mumbai",
+        "withdrawAssetsErc20": "npx hardhat withdrawAssetsErc20 --network mumbai",
+        "withdrawETH": "npx hardhat withdrawETH --network mumbai",
+        "depositNFT": "npx hardhat depositNFT --network mumbai",
+        "withdrawNFT": "npx hardhat withdrawNFT --network mumbai"
     },
     "dependencies": {
         "@openzeppelin/contracts": "4.7.3",
@@ -87,6 +96,7 @@
         "@commitlint/cli": "^17.1.2",
         "@commitlint/config-conventional": "^17.1.0",
         "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+        "@nomiclabs/hardhat-ethers": "^2.2.1",
         "@nomiclabs/hardhat-solhint": "^2.0.1",
         "@openzeppelin/hardhat-upgrades": "^1.21.0",
         "@typescript-eslint/eslint-plugin": "^5.41.0",
@@ -94,6 +104,7 @@
         "dotenv": "^16.0.3",
         "eslint": "^8.26.0",
         "eslint-config-prettier": "^8.5.0",
+        "ethers": "^5.7.2",
         "hardhat": "^2.12.0",
         "hardhat-abi-exporter": "^2.10.1",
         "hardhat-contract-sizer": "^2.6.1",

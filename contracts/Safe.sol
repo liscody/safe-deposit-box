@@ -23,9 +23,13 @@ contract Safe {
         address asset;
         bool claimed;
     }
-
-    mapping(address => uint256) public userDepositIds;
+    /// user address => deposit number (count user deposit)
+    mapping(address => uint256) public userDepositCount;
+    /// user address => deposit number (count user deposit)
+    mapping(address => uint256) public userDepositNftCount;
+    /// user address => user deposit number => info
     mapping(address => mapping(uint256 => DepositInfo)) public deposited;
+    /// user address => user deposit number => info NFT
     mapping(address => mapping(uint256 => NftDepositInfo)) public nftDeposited;
 
     error AlreadyWithdrawn();
@@ -55,15 +59,18 @@ contract Safe {
 
     /**
      * @dev Add token amount to balance of the contract
+     * @param asset address of deposit asset
+     * @param amount deposit amount in specific currency
+     * @param _startClaimPeriod date from possible to withdraw
      */
     function depositAssets(
         address asset,
         uint256 amount,
         uint64 _startClaimPeriod
     ) external payable {
-        userDepositIds[msg.sender] += 1;
+        userDepositCount[msg.sender] += 1;
 
-        deposited[msg.sender][userDepositIds[msg.sender]] = DepositInfo(amount, _startClaimPeriod, asset, false);
+        deposited[msg.sender][userDepositCount[msg.sender]] = DepositInfo(amount, _startClaimPeriod, asset, false);
 
         if (asset == address(0)) {
             if (msg.value != amount) revert WrongAmount();
@@ -76,15 +83,18 @@ contract Safe {
 
     /**
      * @dev Add NFT to balance of the contract
+     * @param assetNft address of deposit asset
+     * @param nftId deposit NFT ID
+     * @param _startClaimPeriod date from possible to withdraw
      */
     function depositNftAssets(
         address assetNft,
         uint256 nftId,
         uint64 _startClaimPeriod
     ) external {
-        userDepositIds[msg.sender] += 1;
+        userDepositNftCount[msg.sender] += 1;
 
-        nftDeposited[msg.sender][userDepositIds[msg.sender]] = NftDepositInfo(
+        nftDeposited[msg.sender][userDepositNftCount[msg.sender]] = NftDepositInfo(
             nftId,
             _startClaimPeriod,
             assetNft,
@@ -107,6 +117,10 @@ contract Safe {
 
     /**
      * @dev Withdraw amount by authorized user
+     * @param depositOwner address of deposit owner  
+     * @param depositId deposit box ID  
+     * @param withdrawDeadline valid timestamp for signature 
+     * @param signature signed message 
      */
     function withdrawAssets(
         address depositOwner,
@@ -148,6 +162,10 @@ contract Safe {
 
     /**
      * @dev Withdraw NFT by authorized user
+     * @param depositOwner address of deposit owner  
+     * @param depositId deposit box ID  
+     * @param withdrawDeadline valid timestamp for signature 
+     * @param signature signed message 
      */
     function withdrawNftAssets(
         address depositOwner,

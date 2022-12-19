@@ -1,13 +1,39 @@
-# Solidity TS Hardhat project template
+## How to use the Template
 
-This is sceleton for using in production, including development, audit and testing of contracts on Solidity with Hardhat, Ethers and TypeScript.
+This template deployed on polygon testnet - Mumbai. For test proposes only. 
 
-Note 1. This project template is ready for use, only README.md files are not ready, they are in the process. In the future, this template can be improved and supplemented.
+### 1. Deploy contract  
+```bash
+# set network & run deploy script 
+npx hardhat run --network mumbai scripts/deployment/deploy.ts
+```
+### 2. Verify contracts
 
-Note 2. In GitHub it can be reused by clicking the "Use this template" button at the top of the page.
+```bash
+# set network & contract address. Run command after it 
+npx hardhat verify --network mumbai <address>
+```
 
-The MIT license is used, if otherwise, replace the `LICENSE` file and the "license" field in the `package.json` file according to your needs.
 
-The project name, description and author can be set in the `package.json` file.
+### 2. Check & adjust configs ENV file
 
-Note 3. There are a lot of comments in the files `.env.example` and `hardhat.config.ts`.
+- Add all settings to env 
+
+
+POLYGON_TESTNET_KEYS  -> that is a private keys of users
+
+deployer == bob -> that is a same person. We will use a bob to sign a data and provide it by caller for withdraw a assets.bob has signer role 
+
+NFT_RECEIVER -> that is the address of further NFT owner 
+
+```bash
+# Mint call with MyERC721 contract:
+
+forge test --match test_BytesLib_slice
+
+# Differential fuzzing against another implementation with incompatible Solidity version via ganache fork:
+forge test --fork-url http://127.0.0.1:8545/ --match-path src/test/example/BytesLib-BytesUtil-diff.sol
+
+# Differential fuzzing against an executable via FFI shell command execution:
+forge test --match-path src/test/example/BytesLib-FFI-diff.sol
+```

@@ -117,7 +117,7 @@ describe("SAFE", function () {
             await myErc20.connect(bob).approve(safe.address, amount); // 1 ETH
             await safe.connect(bob).depositAssets(myErc20.address, amount, startClaimPeriod);
 
-            let depositId = 5;
+            let depositId = 3;
 
             deadline = (await time.latest()) + oneDay * 365;
             let deposit = await safe.deposited(bob.address, depositId);
@@ -266,7 +266,7 @@ describe("SAFE", function () {
 
     describe("Test withdrawNftAssets function", function () {
         it("Should return custom error 'AlreadyWithdrawn'", async () => {
-            let depositId = 3;
+            let depositId = 1;
             startClaimPeriod = (await time.latest()) + oneDay + oneDay;
             deadline = (await time.latest()) + oneDay + oneDay;
             let nftDeposit = await safe.nftDeposited(bob.address, depositId);
@@ -295,8 +295,8 @@ describe("SAFE", function () {
             await myErc721.safeMint(bob.address); // mint token id 3
             await myErc721.connect(bob).approve(safe.address, 3);
             await safe.connect(bob).depositNftAssets(myErc721.address, 3, startClaimPeriod);
-            
-            let depositId = 5;
+
+            let depositId = 3;
             deadline = (await time.latest()) + oneDay * 365;
             let nftDeposit = await safe.nftDeposited(bob.address, depositId);
 
@@ -370,7 +370,7 @@ describe("SAFE", function () {
         });
 
         it("Alice address own NFT on balance", async () => {
-            let depositId = 3;
+            let depositId = 1;
             startClaimPeriod = (await time.latest()) + oneDay + oneDay;
             deadline = (await time.latest()) + oneDay + oneDay;
             let nftDeposit = await safe.nftDeposited(bob.address, depositId);
